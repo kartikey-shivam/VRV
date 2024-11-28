@@ -1,0 +1,75 @@
+export type SearchParams = {
+  [key: string]: string | string[] | undefined;
+};
+
+export type DatePreset = {
+  label: string;
+  from: Date;
+  to: Date;
+  shortcut: string;
+};
+
+export type Option = {
+  label: string;
+  value: string | boolean | number | undefined;
+};
+
+type ComparisonOption = {
+  type: "select";
+  options: Option[];
+};
+
+export type Input = {
+  id?: string;
+  type: "input";
+  options?: Option[];
+  inputType?: string;
+  min?: number;
+  step?: string;
+  placeholder?: string;
+  comparison?: ComparisonOption;
+};
+
+export type Checkbox = {
+  type: "checkbox";
+  component?: (props: Option) => JSX.Element | null;
+  options?: any[];
+};
+
+export type Slider = {
+  type: "slider";
+  min: number;
+  max: number;
+  // if options is undefined, we will provide all the steps between min and max
+  options?: Option[];
+};
+
+export type Timerange = {
+  type: "timerange";
+  options?: Option[]; // required for TS
+  presets?: DatePreset[];
+};
+
+export type Base<TData> = {
+  label: string;
+  value: keyof TData;
+  /**
+   * Defines if the accordion in the filter bar is open by default
+   */
+  defaultOpen?: boolean;
+  /**
+   * Defines if the command input is disabled for this field
+   */
+  commandDisabled?: boolean;
+};
+
+export type DataTableCheckboxFilterField<TData> = Base<TData> & Checkbox;
+export type DataTableSliderFilterField<TData> = Base<TData> & Slider;
+export type DataTableInputFilterField<TData> = Base<TData> & Input;
+export type DataTableTimerangeFilterField<TData> = Base<TData> & Timerange;
+
+export type DataTableFilterField<TData> =
+  | DataTableCheckboxFilterField<TData>
+  | DataTableSliderFilterField<TData>
+  | DataTableInputFilterField<TData>
+  | DataTableTimerangeFilterField<TData>;
