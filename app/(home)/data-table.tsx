@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { TransactionDialog } from '@/components/custom/transaction-dialog'
+import { NextResponse } from 'next/server'
 interface Metadata {
   totalDocs: number
   limit: number
@@ -77,7 +78,7 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
   const [cronStatus, setCronStatus] = React.useState(false)
   const [isGeneratingReport, setIsGeneratingReport] = React.useState(false)
   const [isDownloadingCSV, setIsDownloadingCSV] = React.useState(false)
-
+  const [permissions,setPermissions] = React.useState([])
   const table = useReactTable({
     data,
     columns,
@@ -116,9 +117,27 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
       return map
     },
   })
-
-
+ 
+  const getUserPermissions= async()=>{
+    try {
+      const {
+        data: {
+          data: { user },
+        },
+      } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
+        withCredentials: true,
+      })
+      console.log(user,"40")
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 401 })
+      }
+      setPermissions(user?.permissions)
+    } catch (error) {
+        console.log(error)
+    }
+  }
   React.useEffect(() => {
+    getUserPermissions()
     const columnFiltersWithNullable = filterFields.map((field) => {
       const filterValue = columnFilters.find((filter) => filter.id === field.value)
       if (!filterValue) return { id: field.value, value: null }
@@ -228,19 +247,38 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
         <DataTableToolbar table={table} controlsOpen={controlsOpen} setControlsOpen={setControlsOpen} />
         <div className="flex justify-between">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={generateReport} disabled={isGeneratingReport}>
-              {isGeneratingReport ? "Generating..." : "Generate Report"}
-            </Button>
-            <Button variant="outline" onClick={downloadCSV} disabled={isDownloadingCSV}>
-              {isDownloadingCSV ? "Downloading..." : "Download CSV"}
-            </Button>
+          {permissions && permissions.map((perm,index)=>{
+              if(perm=='Generate_report' || perm=='All'){
+                return (<Button variant="outline" onClick={generateReport} disabled={isGeneratingReport}>
+                  {isGeneratingReport ? "Generating..." : "Generate Report"}
+                </Button>);
+              }
+            })}
+            
+            {permissions && permissions.map((perm,index)=>{
+              if(perm=='Download_report' || perm=='All'){
+                return (<Button variant="outline" onClick={downloadCSV} disabled={isDownloadingCSV}>
+                  {isDownloadingCSV ? "Downloading..." : "Download CSV"}
+                </Button>);
+              }
+            })}
+            {permissions && permissions.map((perm,index)=>{
+              if(perm=='Create_transaction' || perm=='All'){
+                return (<TransactionDialog onSuccess={refreshData} />);
+              }
+            })}
             {/* <TransactionDialog /> */}
-            <TransactionDialog onSuccess={refreshData} />
+            
           </div>
-          <div className="flex items-center gap-2 mr-4">
-            <Switch id="cron-job" disabled={isCronLoading} checked={cronStatus} onClick={toggleCronJob} />
-            <Label htmlFor="cron-job">Cron Job</Label>
-          </div>
+          {permissions && permissions.map((perm,index)=>{
+              if(perm=='Cron_job_access' || perm=='All'){
+                return ( <div className="flex items-center gap-2 mr-4">
+                  <Switch id="cron-job" disabled={isCronLoading} checked={cronStatus} onClick={toggleCronJob} />
+                  <Label htmlFor="cron-job">Cron Job</Label>
+                </div>);
+              }
+            })}
+         
         </div>
         <div className="rounded-md border">
           <Table>

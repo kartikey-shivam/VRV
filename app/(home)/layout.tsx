@@ -3,6 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { UserMenu } from "@/components/custom/user-menu";
 import { ModeToggle } from "@/components/theme/toggle-mode";
+import { Button } from "@/components/ui/button";
+import { UserManagementDialog } from "@/components/custom/user-management-dialog";
+import { PermissionDialog } from "@/components/custom/permission-dialog";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +27,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <UserMenu />
           </div>
           <Separator />
+          <div className="flex flex-row-reverse space-x-4">
+            <UserManagementDialog />
+            <PermissionDialog />
+          </div>
           {children}
           <Badge
             variant="outline"
@@ -31,6 +38,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             VRV
           </Badge>
+          <div>
+          </div>
         </div>
       </main>
     </>
