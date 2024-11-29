@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <PlausibleProvider domain="https://VRV.api.shivamsaraswat.com">
+      <PlausibleProvider domain="">
         <ReactQueryProvider>
           <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
             <Toaster richColors/>

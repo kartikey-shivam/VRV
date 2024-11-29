@@ -67,7 +67,10 @@ const chartConfig = {
 
 export default function PieChartComponent() {
   const [chartData, setChartData] = React.useState<TransactionData[]>([])
-
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
   // Add function to get date range string
   const getDateRangeString = () => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -81,9 +84,10 @@ export default function PieChartComponent() {
   }
 
   useEffect(() => {
-    axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/report/transaction-type`, {
-      withCredentials: true
-    })
+    axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/report/transaction-type`,{  headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }, })
       .then(({ data: { success, message, data } }) => {
         setChartData(data?.report)
       })

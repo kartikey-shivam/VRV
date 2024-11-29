@@ -24,7 +24,10 @@ const validationSchema = Yup.object().shape({
 })
 export function PermissionDialog() {
     const [open, setOpen] = useState(false)
-
+    let token:any;
+    if (typeof window !== "undefined") {
+       token = localStorage.getItem("token");
+    }
     const formik = useFormik({
         initialValues: {
             name: '',
@@ -40,7 +43,10 @@ export function PermissionDialog() {
                 const { data: { success, message } } = await axios.post(
                     `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/permission/add`,
                     submitValues,
-                    { withCredentials: true }
+                    {  headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      }, }
                 )
 
                 if (success) {

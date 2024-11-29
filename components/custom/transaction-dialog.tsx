@@ -72,7 +72,10 @@ const validationSchema = Yup.object().shape({
 
 export function TransactionDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
-
+    let token:any;
+    if (typeof window !== "undefined") {
+       token = localStorage.getItem("token");
+    }
     const formik = useFormik({
         initialValues: {
             transactionId: '',
@@ -104,7 +107,10 @@ export function TransactionDialog({ onSuccess }: { onSuccess?: () => void }) {
                 const { data: { success, message } } = await axios.post(
                     `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/create`,
                     submitValues,
-                    { withCredentials: true }
+                    { headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      }, }
                 )
 
                 if (success) {

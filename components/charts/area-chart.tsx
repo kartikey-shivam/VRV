@@ -60,13 +60,19 @@ export default function AreaChartComponent() {
   const [selectedTimeRange, setSelectedTimeRange] = React.useState<TimeRangeOption>(timeRanges[0])
   const [chartData, setChartData] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(true)
-
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
   const fetchChartData = React.useCallback(async (timeRange: TimeRangeOption) => {
     setIsLoading(true)
     try {
       const { data: { success, message, data } } = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/report/amounts?amount=${timeRange.amount}&unit=${timeRange.unit}`,
-        { withCredentials: true }
+        {  headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }, }
       )
       setChartData(data?.report || [])
     } catch (error) {

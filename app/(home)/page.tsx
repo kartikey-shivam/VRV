@@ -29,6 +29,7 @@ interface ApiResponse {
 }
 
 export default function TransactionsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  
   const [data, setData] = useState<ITransaction[]>([])
   const [metadata, setMetadata] = useState<ApiResponse['data']['metadata']>({
     totalDocs: 0,
@@ -49,8 +50,15 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const search = searchParams
-
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
+  
   useEffect(() => {
+   
+    
+    
     const debounceTimeout = setTimeout(() => {
       fetchData()
     }, 300)
@@ -59,6 +67,7 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
   }, [pagination, columnFilters, sorting])
 
   const fetchData = async () => {
+   
     setIsLoading(true)
     try {
       const queryParams = {
@@ -69,7 +78,10 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
       }
       const { data: result } = await axios.get<ApiResponse>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction`, {
         params: queryParams,
-        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       })
       setData(result.data.transaction)
       setMetadata(result.data.metadata)

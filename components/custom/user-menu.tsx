@@ -22,6 +22,10 @@ export function UserMenu() {
         avatar: '',
         email: '',
     })
+    let token:any;
+    if (typeof window !== "undefined") {
+       token = localStorage.getItem("token");
+    }
     useEffect(() => {
         fetchUserDetails()
     }, [])
@@ -32,7 +36,10 @@ export function UserMenu() {
                     data: { user },
                 },
             } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
-                withCredentials: true,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
             })
             if (!user) router.push('/login')
             setUser(user)
@@ -42,16 +49,13 @@ export function UserMenu() {
     }
     const handleLogout = async () => {
         try {
-            const {
-                data: { success, message },
-            } = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
-                withCredentials: true,
-            })
-            if (success) {
-                document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-                toast.success(message)
+           
+            console.log("59")
+            if (typeof window !== "undefined") {
+                token = localStorage.removeItem("token");
+             }
+                toast.success('Logout Successfully')
                 router.push('/login')
-            }
         } catch (error) {
             console.log(error)
         }

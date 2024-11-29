@@ -79,6 +79,10 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
   const [isGeneratingReport, setIsGeneratingReport] = React.useState(false)
   const [isDownloadingCSV, setIsDownloadingCSV] = React.useState(false)
   const [permissions,setPermissions] = React.useState([])
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
   const table = useReactTable({
     data,
     columns,
@@ -125,9 +129,11 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
           data: { user },
         },
       } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
-        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       })
-      console.log(user,"40")
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 401 })
       }
@@ -159,7 +165,10 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
         setIsCronLoading(true)
         const { data: { success, message, data } } = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/cron/status`,
-          { withCredentials: true }
+          { headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }, }
         )
         if (success) {
           setCronStatus(data.status)
@@ -178,7 +187,11 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
       setIsDownloadingCSV(true)
       const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/download-csv`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       })
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -200,7 +213,10 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
       setIsGeneratingReport(true)
       const { data: { success, message } } = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/report/get`,
-        { withCredentials: true }
+        { headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }, }
       )
       if (success) toast.success(message)
     } catch (error) {
@@ -217,7 +233,10 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
       const { data: { success, message, data } } = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/cron/toggle`,
         {},
-        { withCredentials: true }
+        { headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }, }
       )
       if (success) {
         toast.success(message)

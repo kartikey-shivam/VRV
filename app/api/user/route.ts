@@ -1,9 +1,12 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import axios from 'axios'
 export async function GET() {
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
   try {
-    const token = cookies().get('token')
+    
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -14,7 +17,10 @@ export async function GET() {
         data: { user },
       },
     } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
-      withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     })
 
     if (!user) {

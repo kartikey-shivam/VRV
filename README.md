@@ -2,13 +2,13 @@
 
 A modern, full-stack transaction management system built with Next.js, featuring real-time data visualization, advanced filtering, and comprehensive transaction tracking.
 
-Frontend deployed Link: [https://app.VRV.shivamsaraswat.com](https://app.VRV.shivamsaraswat.com/)
+Frontend deployed Link: [https://vrv-client-kt2pc33yp-kartikeyshivams-projects.vercel.app](https://vrv-client-kt2pc33yp-kartikeyshivams-projects.vercel.app/)
 
-Backend deployed Link: [https://VRV.api.shivamsaraswat.com/](https://VRV.api.shivamsaraswat.com/)
+Backend deployed Link: [https://vrv-server-production.up.railway.app/](https://vrv-server-production.up.railway.app/)
 
-Postman Collection Link: [https://github.com/shivam2410/VRV-server/blob/main/public/VRV.postman_collection.json](https://github.com/shivam2410/VRV-server/blob/main/public/VRV.postman_collection.json)
+Postman Collection Link: []()
 
-Backend Repository Link: [https://github.com/shivam2410/VRV-server](https://github.com/shivam2410/VRV-server)
+Backend Repository Link: [https://github.com/kartikey-shivam/VRV-server](https://github.com/kartikey-shivam/VRV-server)
 
 ## Features
 
@@ -47,14 +47,13 @@ Backend Repository Link: [https://github.com/shivam2410/VRV-server](https://gith
 ### Backend Integration
 
 - RESTful API Integration
-- Cookie-based Authentication
 - Real-time Data Updates
 - CSV Export Functionality
 
 ### Screenshots
 
-![Table](https://github.com/shivam2410/VRV-client/blob/main/public/images/screenshot-01.png)
-![Amount Sent & Received](https://github.com/shivam2410/VRV-client/blob/main/public/images/screenshot-02.png)
-![Daily Transactions](https://github.com/shivam2410/VRV-client/blob/main/public/images/screenshot-03.png)
-![Transaction Types](https://github.com/shivam2410/VRV-client/blob/main/public/images/screenshot-04.png)
+![Table](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-01.png)
+![Amount Sent & Received](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-02.png)
+![Daily Transactions](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-03.png)
+![Transaction Types](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-04.png)
 # VRV

@@ -47,9 +47,7 @@ export default function RegisterForm() {
             firstName: values.firstName,
             lastName: values.lastName,
           },
-          {
-            withCredentials: true,
-          }
+          
         )
 
         if (response.data) {

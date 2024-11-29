@@ -3,14 +3,61 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { UserMenu } from "@/components/custom/user-menu";
 import { ModeToggle } from "@/components/theme/toggle-mode";
-import { Button } from "@/components/ui/button";
 import { UserManagementDialog } from "@/components/custom/user-management-dialog";
 import { PermissionDialog } from "@/components/custom/permission-dialog";
+import React from "react";
+import axios from "axios";
+import { NextResponse } from "next/server";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const [isLogin,setIsLogin]=React.useState(false)
+
+  const [permissions,setPermissions] = React.useState([])
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
+  
+  const getUserPermissions= async()=>{
+    try {
+      const {
+        data: {
+          data: { user },
+        },
+      } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 401 })
+      }
+      setPermissions(user?.permissions)
+    } catch (error) {
+        console.log(error)
+    }
+  }
+  React.useEffect(()=>{
+    let token:any;
+    if (typeof window !== "undefined") {
+      token = localStorage.getItem("token");
+    }
+    if(!token){
+      router.refresh()
+      toast.error("token not found")
+      router.push('/login')
+    }else{
+      setIsLogin(true)
+    }
+    getUserPermissions()
+  },[])
   return (
     <>
-      <main className="container mx-auto flex min-h-screen flex-col gap-4 p-4 sm:p-16">
+    {isLogin &&  <main className="container mx-auto flex min-h-screen flex-col gap-4 p-4 sm:p-16">
         <div className="absolute top-4 right-4 sm:top-16 sm:right-16">
           <ModeToggle />
         </div>
@@ -27,10 +74,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <UserMenu />
           </div>
           <Separator />
-          <div className="flex flex-row-reverse space-x-4">
-            <UserManagementDialog />
-            <PermissionDialog />
-          </div>
+          {permissions && permissions.map((perm,index)=>{
+              if( perm=='All'){
+                return ( <div className="flex flex-row-reverse space-x-4">
+            
+                  <UserManagementDialog />
+                  <PermissionDialog />
+                </div>);
+              }
+            })}
+         
           {children}
           <Badge
             variant="outline"
@@ -41,7 +94,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
           </div>
         </div>
-      </main>
+      </main>}
+      {!isLogin && <div className="h-screen w-full flex justify-center items-center">Login to access transaction dashboard</div>}
     </>
   );
 }

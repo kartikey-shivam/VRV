@@ -21,7 +21,10 @@ const loginSchema = Yup.object().shape({
 export default function LoginForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-
+  let token:any;
+  if (typeof window !== "undefined") {
+     token = localStorage.getItem("token");
+  }
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -31,11 +34,12 @@ export default function LoginForm() {
     onSubmit: async (values) => {
       setIsLoading(true)
       try {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, values, {
-          withCredentials: true,
-        })
-
-        if (response.data) {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, values)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token",response.data.data.token)
+        }
+        console.log(response.data)
+        if (response.data.success) {
           toast.success(response.data.message)
           router.push('/')
           router.refresh()

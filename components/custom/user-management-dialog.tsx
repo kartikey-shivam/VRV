@@ -14,6 +14,7 @@ import { setLocale } from "yup"
 import axios from "axios"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { headers } from "next/headers"
 
 // Validation Schema
 
@@ -24,6 +25,11 @@ export function UserManagementDialog() {
     const [email,setEmail]=useState<String>()
     const [isLoading,setIsLoading]= useState(false)
     // Function to handle adding/removing permissions
+    let token:any;
+    if (typeof window !== "undefined") {
+       token = localStorage.getItem("token");
+    }
+    
     const togglePermission = (permission: string, isChecked: boolean) => {
       if (isChecked) {
         // Add the permission if checked
@@ -37,11 +43,17 @@ export function UserManagementDialog() {
     const handleSubmit = async ()=>{
         setIsLoading(true)
         try {
-            
+            console.log(token,"46   ")
             const { data: { success, message } } = await axios.patch(
                 `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/permission/update`,
-                {email,permission},
-                { withCredentials: true }
+                    {email,permission},
+                    {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    }
+                  },
+                  
             )
 
             if (success) {
@@ -57,7 +69,12 @@ export function UserManagementDialog() {
     const fetchUsers=async ()=>{
         try {
             const { data: { success, message,data:{userEmails} } } = await axios.get(
-                `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/all`,{ withCredentials: true })
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/all`, {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    },
+                  })
                 setUsers(userEmails)
                 if (success) {
                     toast.success(message)
