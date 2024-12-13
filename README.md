@@ -8,7 +8,7 @@ Backend deployed Link: [https://vrv-server-production.up.railway.app/](https://v
 
 Postman Collection Link: []()
 
-Backend Repository Link: [https://github.com/kartikey-shivam/VRV-server](https://github.com/kartikey-shivam/VRV-server)
+Backend Repository Link: [https://github.com/kartikey-shivam/Ampirial Labs-server](https://github.com/kartikey-shivam/Ampirial Labs-server)
 
 ## Features
 
@@ -52,8 +52,10 @@ Backend Repository Link: [https://github.com/kartikey-shivam/VRV-server](https:/
 
 ### Screenshots
 
-![Table](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-01.png)
-![Amount Sent & Received](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-02.png)
-![Daily Transactions](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-03.png)
-![Transaction Types](https://github.com/kartikey-shivam/VRV-client/blob/main/public/images/screenshot-04.png)
-# VRV
+![Table](https://github.com/kartikey-shivam/Ampirial Labs-client/blob/main/public/images/screenshot-01.png)
+![Amount Sent & Received](https://github.com/kartikey-shivam/Ampirial Labs-client/blob/main/public/images/screenshot-02.png)
+![Daily Transactions](https://github.com/kartikey-shivam/Ampirial Labs-client/blob/main/public/images/screenshot-03.png)
+![Transaction Types](https://github.com/kartikey-shivam/Ampirial Labs-client/blob/main/public/images/screenshot-04.png)
+
+# Ampirial Labs
+# Ampirial-Labs-frontend
