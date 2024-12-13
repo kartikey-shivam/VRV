@@ -5,16 +5,13 @@ import { Skeleton } from './skeleton'
 import { columns } from './columns'
 import { filterFields } from './constants'
 import { DataTable } from './data-table'
-import AreaChart from '@/components/charts/area-chart'
-import LineChartComponent from '@/components/charts/line-chart'
-import PieChartComponent from '@/components/charts/pie-chart'
 import type { PaginationState, ColumnFiltersState, SortingState } from '@tanstack/react-table'
-import { ITransaction } from '@/types/transaction/Transaction'
+import { Offer } from '@/types/offer'
 import axios from 'axios'
 
 interface ApiResponse {
   data: {
-    transaction: ITransaction[]
+    offers: Offer[]
     metadata: {
       totalDocs: number
       limit: number
@@ -28,9 +25,8 @@ interface ApiResponse {
   }
 }
 
-export default function TransactionsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  
-  const [data, setData] = useState<ITransaction[]>([])
+export default function OffersPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const [data, setData] = useState<Offer[]>([])
   const [metadata, setMetadata] = useState<ApiResponse['data']['metadata']>({
     totalDocs: 0,
     limit: 10,
@@ -50,15 +46,12 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const search = searchParams
-  let token:any;
-  if (typeof window !== "undefined") {
-     token = localStorage.getItem("token");
+  let token: any
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('token')
   }
-  
+
   useEffect(() => {
-   
-    
-    
     const debounceTimeout = setTimeout(() => {
       fetchData()
     }, 300)
@@ -67,23 +60,44 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
   }, [pagination, columnFilters, sorting])
 
   const fetchData = async () => {
-   
     setIsLoading(true)
     try {
+      const token = localStorage.getItem('token')
       const queryParams = {
         page: (pagination.pageIndex + 1).toString(),
         limit: pagination.pageSize.toString(),
         ...convertFiltersToParams(columnFilters),
         ...convertSortingToParams(sorting),
       }
-      const { data: result } = await axios.get<ApiResponse>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction`, {
-        params: queryParams,
+
+      // Get user role and ID first
+      const { data: userData } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       })
-      setData(result.data.transaction)
+
+      const role = userData.data.user.role
+      const userId = userData.data.user._id
+      let endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/offer`
+
+      // Set endpoint based on role and include user ID
+      if (role === 'RECRUITER') {
+        endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/offer`
+      } else if (role === 'CANDIDATE') {
+        endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/offer`
+      }
+
+      const { data: result } = await axios.get<ApiResponse>(endpoint, {
+        params: queryParams,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      setData(result.data.offers)
       setMetadata(result.data.metadata)
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -123,10 +137,6 @@ export default function TransactionsPage({ searchParams }: { searchParams: { [ke
         setColumnFilters={setColumnFilters}
         fetchData={fetchData}
       />
-      <AreaChart />
-      <LineChartComponent />
-      {/* <BarChart /> */}
-      <PieChartComponent />
     </React.Suspense>
   )
 }

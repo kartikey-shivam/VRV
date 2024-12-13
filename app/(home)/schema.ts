@@ -1,14 +1,11 @@
-import {
-  ARRAY_DELIMITER,
-  RANGE_DELIMITER,
-  SLIDER_DELIMITER,
-} from "@/lib/delimiters";
-import { REGIONS } from "@/constants/region";
-import { TAGS } from "@/constants/tag";
-import { z } from "zod";
-import { CurrencyCode } from "@/types/transaction/CurrencyCode";
-import { TransactionType } from "@/types/transaction/TransactionType";
-import { TransactionState } from "@/types/transaction/TransactionState";
+import { ARRAY_DELIMITER, RANGE_DELIMITER, SLIDER_DELIMITER } from '@/lib/delimiters'
+import { REGIONS } from '@/constants/region'
+import { TAGS } from '@/constants/tag'
+import { z } from 'zod'
+import { CurrencyCode } from '@/types/transaction/CurrencyCode'
+import { TransactionType } from '@/types/transaction/TransactionType'
+import { TransactionState } from '@/types/transaction/TransactionState'
+import { OfferStatus } from '@/types/offer'
 
 // https://github.com/colinhacks/zod/issues/2985#issue-2008642190
 const stringToBoolean = z
@@ -16,13 +13,13 @@ const stringToBoolean = z
   .toLowerCase()
   .transform((val) => {
     try {
-      return JSON.parse(val);
+      return JSON.parse(val)
     } catch (e) {
-      console.log(e);
-      return undefined;
+      console.log(e)
+      return undefined
     }
   })
-  .pipe(z.boolean().optional());
+  .pipe(z.boolean().optional())
 
 export const columnSchema = z.object({
   timestamp: z.date(),
@@ -36,42 +33,17 @@ export const columnSchema = z.object({
   transactionId: z.string(),
   description: z.string(),
   tags: z.string().array(),
-});
+})
 
-export type ColumnSchema = z.infer<typeof columnSchema>;
+export type ColumnSchema = z.infer<typeof columnSchema>
 
 export const columnFilterSchema = z.object({
-  timestamp: z
-    .string()
-    .transform((val) => val.split(RANGE_DELIMITER).map(Number))
-    .pipe(z.coerce.date().array())
-    .optional(),
-    originAmountDetails: z.string().optional(),
-    destinationAmountDetails: z.string().optional(),
-  currencyCode: z
-    .string()
-    .transform((val) => val.split(ARRAY_DELIMITER))
-    .pipe(z.enum([...Object.values(CurrencyCode)] as [string, ...string[]]).array())
-    .optional(),
-  type: z
-    .string()
-    .transform((val) => val.split(ARRAY_DELIMITER))
-    .pipe(z.enum([...Object.values(TransactionType)] as [string, ...string[]]).array())
-    .optional(),
-  transactionState: z
-    .string()
-    .transform((val) => val.split(ARRAY_DELIMITER))
-    .pipe(z.enum([...Object.values(TransactionState)] as [string, ...string[]]).array())
-    .optional(),
-  originUserId: z.string().optional(),
-  destinationUserId: z.string().optional(),
-  transactionId: z.string().optional(),
-  description: z.string().optional(),
-  tags: z
-    .string()
-    .transform((val) => val.split(ARRAY_DELIMITER))
-    .pipe(z.enum(TAGS).array())
-    .optional(),
-});
+  name: z.string().optional(),
+  position: z.string().optional(),
+  salary: z.string().optional(),
+  status: z.nativeEnum(OfferStatus).optional(),
+  eSignByRecruiter: z.boolean().optional(),
+  eSignByCandidate: z.boolean().optional(),
+})
 
-export type ColumnFilterSchema = z.infer<typeof columnFilterSchema>;
+export type ColumnFilterSchema = z.infer<typeof columnFilterSchema>

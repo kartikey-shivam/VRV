@@ -1,13 +1,8 @@
-'use client'
-
+"use client'"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/custom/table'
-import { DataTableFilterCommand } from '@/components/data-table/data-table-filter-command'
-import { DataTableFilterControls } from '@/components/data-table/data-table-filter-controls'
 import { DataTablePagination } from '@/components/data-table/data-table-pagination'
-import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import type { DataTableFilterField } from '@/components/data-table/types'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { cn } from '@/lib/utils'
 import type { ColumnDef, ColumnFiltersState, PaginationState, SortingState, Table as TTable, VisibilityState } from '@tanstack/react-table'
@@ -19,8 +14,12 @@ import { searchParamsParser } from './search-params'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import axios from 'axios'
-import { TransactionDialog } from '@/components/custom/transaction-dialog'
+import { OfferDialog } from '@/components/custom/offer-dialog'
 import { NextResponse } from 'next/server'
+import { OfferStatus } from '@/types/offer'
+import { OfferDetailsDialog } from '@/components/custom/offer-details-dialog'
+import { Offer } from '@/types/offer'
+
 interface Metadata {
   totalDocs: number
   limit: number
@@ -33,22 +32,22 @@ interface Metadata {
 }
 
 const copyToClipboard = (text: string) => {
-  navigator.clipboard.writeText(text).catch(console.error);
-};
+  navigator.clipboard.writeText(text).catch(console.error)
+}
 
 const getValueForCopy = (value: any): string => {
-  if (value === null || value === undefined) return '';
+  if (value === null || value === undefined) return ''
   if (typeof value === 'object') {
     if (Array.isArray(value)) {
-      return value.join(', ');
+      return value.join(', ')
     }
     if ('value' in value) {
-      return String(value.value);
+      return String(value.value)
     }
-    return JSON.stringify(value);
+    return JSON.stringify(value)
   }
-  return String(value);
-};
+  return String(value)
+}
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -69,24 +68,38 @@ export interface DataTableProps<TData, TValue> {
   fetchData: () => void
 }
 
-export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = false, defaultColumnFilters = [], filterFields = [], onPaginationChange, onFilterChange, onSortingChange, pagination, setPagination, columnFilters, setColumnFilters, sorting, setSorting, fetchData }: DataTableProps<TData, TValue>) {
-
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  // metadata,
+  isLoading = false,
+  defaultColumnFilters = [],
+  filterFields = [],
+  onPaginationChange,
+  onFilterChange,
+  onSortingChange,
+  pagination,
+  setPagination,
+  columnFilters,
+  setColumnFilters,
+  sorting,
+  setSorting,
+  fetchData,
+}: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>('data-table-visibility', {})
   const [controlsOpen, setControlsOpen] = useLocalStorage('data-table-controls', true)
   const [_, setSearch] = useQueryStates(searchParamsParser)
-  const [isCronLoading, setIsCronLoading] = React.useState(false)
-  const [cronStatus, setCronStatus] = React.useState(false)
-  const [isGeneratingReport, setIsGeneratingReport] = React.useState(false)
-  const [isDownloadingCSV, setIsDownloadingCSV] = React.useState(false)
-  const [permissions,setPermissions] = React.useState([])
-  let token:any;
-  if (typeof window !== "undefined") {
-     token = localStorage.getItem("token");
+  const [role, setRole] = React.useState('')
+  let token: any
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('token')
   }
+  const [selectedOffer, setSelectedOffer] = React.useState<Offer | null>(null)
+  const [detailsOpen, setDetailsOpen] = React.useState(false)
   const table = useReactTable({
     data,
     columns,
-    pageCount: metadata.totalPages,
+    // pageCount: metadata.totalPages,
     manualPagination: true,
     manualFiltering: true,
     manualSorting: true,
@@ -121,8 +134,8 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
       return map
     },
   })
- 
-  const getUserPermissions= async()=>{
+
+  const getUserRole = async () => {
     try {
       const {
         data: {
@@ -130,20 +143,21 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
         },
       } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       })
+      console.log(user)
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 401 })
       }
-      setPermissions(user?.permissions)
+      setRole(user?.role)
     } catch (error) {
-        console.log(error)
+      console.log(error)
     }
   }
   React.useEffect(() => {
-    getUserPermissions()
+    getUserRole()
     const columnFiltersWithNullable = filterFields.map((field) => {
       const filterValue = columnFilters.find((filter) => filter.id === field.value)
       if (!filterValue) return { id: field.value, value: null }
@@ -159,145 +173,15 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnFilters])
 
-  React.useEffect(() => {
-    const fetchCronStatus = async () => {
-      try {
-        setIsCronLoading(true)
-        const { data: { success, message, data } } = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/cron/status`,
-          { headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          }, }
-        )
-        if (success) {
-          setCronStatus(data.status)
-        }
-      } catch (error) {
-        console.error('Error fetching cron status:', error)
-      } finally {
-        setIsCronLoading(false)
-      }
-    }
-
-    fetchCronStatus()
-  }, [])
-  const downloadCSV = async () => {
-    try {
-      setIsDownloadingCSV(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/download-csv`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'transactions.csv'
-      a.click()
-      toast.success('CSV Downloaded')
-    } catch (error) {
-      toast.error('Failed to download CSV')
-      console.error('Failed to download CSV:', error)
-    } finally {
-      setIsDownloadingCSV(false)
-    }
-  }
-
-  const generateReport = async () => {
-    try {
-      setIsGeneratingReport(true)
-      const { data: { success, message } } = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/report/get`,
-        { headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }, }
-      )
-      if (success) toast.success(message)
-    } catch (error) {
-      toast.error('Failed to generate report')
-      console.error('Failed to generate report:', error)
-    } finally {
-      setIsGeneratingReport(false)
-    }
-  }
-
-  const toggleCronJob = async () => {
-    setIsCronLoading(true)
-    try {
-      const { data: { success, message, data } } = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/transaction/cron/toggle`,
-        {},
-        { headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }, }
-      )
-      if (success) {
-        toast.success(message)
-        setCronStatus(data.status)
-      }
-    } catch (error) {
-      toast.error('Failed to toggle cron job')
-      console.error('Error toggling cron job:', error)
-    } finally {
-      setIsCronLoading(false)
-    }
-  }
-
   const refreshData = () => {
     fetchData()
   }
 
   return (
     <div className="flex w-full h-full flex-col gap-3 sm:flex-row">
-      <div className={cn('w-full p-1 sm:min-w-52 sm:max-w-52 sm:self-start md:min-w-64 md:max-w-64', !controlsOpen && 'hidden')}>
-        <div className="-m-1 h-full p-1">
-          <DataTableFilterControls table={table} columns={columns} filterFields={filterFields} />
-        </div>
-      </div>
       <div className="flex max-w-full flex-1 flex-col gap-4 overflow-hidden p-1">
-        <DataTableFilterCommand table={table} schema={columnFilterSchema} filterFields={filterFields} />
-        <DataTableToolbar table={table} controlsOpen={controlsOpen} setControlsOpen={setControlsOpen} />
         <div className="flex justify-between">
-          <div className="flex gap-2">
-          {permissions && permissions.map((perm,index)=>{
-              if(perm=='Generate_report' || perm=='All'){
-                return (<Button variant="outline" onClick={generateReport} disabled={isGeneratingReport}>
-                  {isGeneratingReport ? "Generating..." : "Generate Report"}
-                </Button>);
-              }
-            })}
-            
-            {permissions && permissions.map((perm,index)=>{
-              if(perm=='Download_report' || perm=='All'){
-                return (<Button variant="outline" onClick={downloadCSV} disabled={isDownloadingCSV}>
-                  {isDownloadingCSV ? "Downloading..." : "Download CSV"}
-                </Button>);
-              }
-            })}
-            {permissions && permissions.map((perm,index)=>{
-              if(perm=='Create_transaction' || perm=='All'){
-                return (<TransactionDialog onSuccess={refreshData} />);
-              }
-            })}
-            {/* <TransactionDialog /> */}
-            
-          </div>
-          {permissions && permissions.map((perm,index)=>{
-              if(perm=='Cron_job_access' || perm=='All'){
-                return ( <div className="flex items-center gap-2 mr-4">
-                  <Switch id="cron-job" disabled={isCronLoading} checked={cronStatus} onClick={toggleCronJob} />
-                  <Label htmlFor="cron-job">Cron Job</Label>
-                </div>);
-              }
-            })}
-         
+          <div className="flex gap-2">{role === 'RECRUITER' && <OfferDialog onSuccess={refreshData} />}</div>
         </div>
         <div className="rounded-md border">
           <Table>
@@ -313,15 +197,23 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    onClick={() => {
+                      setSelectedOffer(row.original as Offer)
+                      setDetailsOpen(true)
+                    }}
+                    className="cursor-pointer hover:bg-muted/50"
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
                         onClick={() => {
-                          const value = cell.getValue();
+                          const value = cell.getValue()
                           if (value !== null && value !== undefined) {
-                            const textToCopy = getValueForCopy(value);
-                            copyToClipboard(textToCopy);
+                            const textToCopy = getValueForCopy(value)
+                            copyToClipboard(textToCopy)
                           }
                         }}
                         className="cursor-pointer hover:bg-muted/50"
@@ -343,6 +235,7 @@ export function DataTable<TData, TValue>({ columns, data, metadata, isLoading = 
         </div>
         <DataTablePagination table={table} />
       </div>
+      <OfferDetailsDialog offer={selectedOffer} open={detailsOpen} onOpenChange={setDetailsOpen} onSuccess={fetchData} userRole={role} />
     </div>
   )
 }

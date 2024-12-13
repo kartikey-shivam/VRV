@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Register | VRV',
+  title: 'Register | Ampirial Labs',
   description: 'Login to access your account',
 }
 

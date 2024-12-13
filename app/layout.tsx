@@ -12,8 +12,8 @@ const fontSans = FontSans({
   variable: '--font-sans',
 })
 
-const TITLE = 'VRV'
-const DESCRIPTION = 'VRV Transaction dashboard'
+const TITLE = 'Ampirial Labs'
+const DESCRIPTION = 'Ampirial Labs Transaction dashboard'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -39,7 +39,7 @@ export default function RootLayout({
       <PlausibleProvider domain="">
         <ReactQueryProvider>
           <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
-            <Toaster richColors/>
+            <Toaster richColors />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               {children}
             </ThemeProvider>
